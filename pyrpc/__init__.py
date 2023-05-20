@@ -32,7 +32,10 @@ class Server(object):
                 msg = e
             if callable(msg):
                 msg = _callable
-            packed_msg = pickle.dumps(msg)
+            try:
+                packed_msg = pickle.dumps(msg)
+            except Exception as e:
+                packed_msg=pickle.dumps(e)
             socket.send(packed_msg)
 
 
