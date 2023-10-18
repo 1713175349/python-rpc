@@ -38,14 +38,18 @@ class Server(object):
                 packed_msg=pickle.dumps(e)
             socket.send(packed_msg)
 
+# import inspect
 
 class Client(object):
-    def __init__(self, *, address='tcp://127.0.0.1:4000'):
+    def __init__(self, *, address='tcp://127.0.0.1:4000',timeout=10000):
         context = zmq.Context()
         socket = context.socket(zmq.REQ)
         socket.connect(address)
         self._context = context
         self._socket = socket
+        socket.RCVTIMEO=timeout
+        socket.SNDTIMEO=timeout
+
 
     def __dir__(self):
         """
@@ -54,6 +58,7 @@ class Client(object):
         socket = self._socket
         msg = ('getattr', '__dir__')
         packed_msg = pickle.dumps(msg)
+        #print(__file__,inspect.currentframe())
         socket.send(packed_msg)
         packed_msg = socket.recv()
         msg = pickle.loads(packed_msg)
@@ -63,6 +68,7 @@ class Client(object):
             def wrapper(*args, **kwargs):
                 msg = ('call', '__dir__', (), {})
                 packed_msg = pickle.dumps(msg)
+                #print(__file__,inspect.currentframe())
                 socket.send(packed_msg)
                 packed_msg = socket.recv()
                 msg = pickle.loads(packed_msg)
@@ -77,6 +83,7 @@ class Client(object):
             return super().__getattribute__(name)
         socket = self._socket
         msg = ('getattr', name)
+        #print(__file__,inspect.currentframe())
         packed_msg = pickle.dumps(msg)
         socket.send(packed_msg)
         packed_msg = socket.recv()
@@ -87,6 +94,7 @@ class Client(object):
             def wrapper(*args, **kwargs):
                 msg = ('call', name, args, kwargs)
                 packed_msg = pickle.dumps(msg)
+                #print(__file__,inspect.currentframe())
                 socket.send(packed_msg)
                 packed_msg = socket.recv()
                 msg = pickle.loads(packed_msg)
